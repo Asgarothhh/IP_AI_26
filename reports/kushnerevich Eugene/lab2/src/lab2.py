@@ -227,6 +227,50 @@ print(f"Кастомная СНС: {history['test_acc'][-1]*100:.2f}%  ({n_param
 print(f"MobileNetV3: {history_pt['test_acc'][-1]*100:.2f}%  ({n_params_trainable:,} обучаемых параметров из {n_params_total:,})")
 
 
+ref_results = {
+    "PyTorch tutorial (простая модель)": 54.0,
+    "Keras baseline": 67.0,
+    "Лучший результат 2011 г.": 80.5,
+    "ImageNet-признаки + классификатор (2015)": 89.14,
+    "ResNet / DenseNet": 92.5,
+    "Человек": 94.0,
+    "ViT (>95%)": 95.0,
+    "SOTA 2026: ViT-H/14 (JFT-300M)": 99.5,
+}
+
+our_results = {
+    "Кастомная СНС": history['test_acc'][-1] * 100,
+    "MobileNetV3": history_pt['test_acc'][-1] * 100,
+}
+
+all_results = {**ref_results, **our_results}
+sorted_items = sorted(all_results.items(), key=lambda kv: kv[1])
+names = [k for k, _ in sorted_items]
+values = [v for _, v in sorted_items]
+colors = ['tab:orange' if n in our_results else 'lightgray' for n in names]
+
+fig, ax = plt.subplots(figsize=(11, 6))
+bars = ax.barh(names, values, color=colors)
+for bar, v in zip(bars, values):
+    ax.text(v + 0.3, bar.get_y() + bar.get_height() / 2, f"{v:.2f}%", va='center')
+ax.set_xlim(40, 105)
+ax.set_xlabel("Точность на тесте CIFAR-10, %")
+ax.set_title("Модели (оранжевые) на фоне известных результатов")
+ax.grid(axis='x', alpha=0.3)
+plt.tight_layout()
+plt.show()
+
+acc_custom = our_results["Кастомная СНС"]
+acc_pt = our_results["MobileNetV3"]
+SOTA = 99.5
+HUMAN = 94.0
+
+print("Сравнение с SOTA:")
+print(f"Кастомная СНС: {acc_custom:.2f}% | до человека: {HUMAN - acc_custom:.2f} п.п. | до SOTA: {SOTA - acc_custom:.2f} п.п.")
+print(f"MobileNetV3: {acc_pt:.2f}% | до человека: {HUMAN - acc_pt:.2f} п.п. | до SOTA: {SOTA - acc_pt:.2f} п.п.")
+print(f"Прирост MobileNetV3 относительно кастомной СНС: {acc_pt - acc_custom:+.2f} п.п.")
+
+
 def predict_with_both(path):
     img = Image.open(path).convert('RGB')
 
